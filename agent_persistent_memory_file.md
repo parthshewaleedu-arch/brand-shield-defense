@@ -3,17 +3,17 @@
 > **AGENT INSTRUCTION:** Read this file at the start of every session. Update the **Current Phase Status**, **Completed Modules**, **Key Technical Decisions**, and **Known Issues / Next Action** sections before completing any prompt.
 
 ## 1. Current Phase Status
-- **Active Phase:** `Phase 3 — Completed`
-- **Overall Completion:** `55%`
-- **Last Verified Test Run:** `47 passed in 21.58s (pytest -v: 100% pass rate, 0 failures, 0 warnings)`
+- **Active Phase:** `Phase 4 — Completed`
+- **Overall Completion:** `70%`
+- **Last Verified Test Run:** `61 passed in 15.34s (pytest -v: 100% pass rate, 0 failures, 0 warnings)`
 
 ## 2. Module Implementation Checklist
-- [x] **Phase 0/1 Schemas:** `backend/app/schemas.py` (`AnalyzeRequest`, `RedirectHop`, `RedirectChainResult`, `DomSignals`, `SandboxResult`, `ShapReason`, `LexicalMlResult`, `BrandRecord`, `VisualMatchCandidate`, `VisualCvResult`)
+- [x] **Phase 0/1 Schemas:** `backend/app/schemas.py` (`AnalyzeRequest`, `RedirectHop`, `RedirectChainResult`, `DomSignals`, `SandboxResult`, `ShapReason`, `LexicalMlResult`, `BrandRecord`, `VisualMatchCandidate`, `VisualCvResult`, `FusionSummary`, `AnalyzeResponse`, `ScanHistoryItem`, `HealthResponse`)
 - [x] **Phase 1:** `backend/app/core/unwrapper.py` (Multi-hop HTTP/Meta/JS redirect tracer with loop detection & shortener detector)
 - [x] **Phase 1:** `backend/app/core/sandbox.py` (Headless Playwright Chromium DOM + 1280x720 viewport screenshot capture)
 - [x] **Phase 2:** `backend/app/core/lexical_ml.py` + `backend/train_tabular.py` (27 canonical features, LightGBM, SHAP top-3 explainer)
 - [x] **Phase 3:** `backend/app/core/visual_cv.py` + `backend/build_brand_vault.py` (MobileNetV3-Small embeddings + pHash brand impersonation engine & Brand Vault)
-- [ ] **Phase 4:** `backend/app/fusion.py` + `backend/app/database.py` + `POST /api/v1/analyze`
+- [x] **Phase 4:** `backend/app/fusion.py` + `backend/app/storage.py` + `backend/app/main.py` (`POST /api/v1/analyze`, `GET /api/v1/health`, `GET /api/v1/brands`, `GET /api/v1/history`)
 - [ ] **Phase 5:** `extension/` (Chrome Manifest V3 real-time interceptor + password-field DOM blocker + SHAP popup)
 - [ ] **Phase 6:** `dashboard/` (SOC Analytics Web UI) + `backend/scripts/demo_spoof_server.py`
 
@@ -28,16 +28,21 @@
   - Impersonation trigger: `not domain_is_official` AND `(cosine_similarity >= 0.82 or (cosine_similarity >= 0.75 and phash_distance <= 10))`
   - Domain ownership verification via `tldextract` strictly validating root domain (eTLD+1) and authorized subdomains against canonical brand official domains.
   - Blank/uniform page detection threshold: `np.std(gray) < 5.0` automatically skips uniform screens.
-- **Model Champion Selection:** Prioritizes lowest False Negative Rate (FNR) with Precision >= 0.85 (breaking ties by PR-AUC). LightGBM selected with Accuracy: 1.0, Precision: 1.0, Recall: 1.0, F1: 1.0, PR-AUC: 1.0, FNR: 0.0000 on bootstrap benchmark.
-- **Offline Resilience:** All tests use `unittest.mock` for WHOIS/SSL network calls and local HTTP fixtures for end-to-end sandbox/unwrapper verification.
+- **Multi-Modal Risk Fusion Architecture:**
+  - **Hard Rule 1 (Visual Impersonation Override):** If `visual_cv.impersonation_detected == True`, unconditionally forces `verdict = "CRITICAL_PHISHING"`, `final_risk_score = max(score, 0.92)`, `recommended_action = "BLOCK_CREDENTIALS"`.
+  - **Hard Rule 2 (Official Domain Safety Guard):** If `visual_cv.domain_is_official == True` and no loops or external form actions, caps `final_risk_score <= 0.25`, forcing `verdict = "SAFE"`, `recommended_action = "ALLOW"`.
+  - **Weighted Fusion:** $0.60 \times \text{Tabular} + 0.25 \times \text{Visual} + 0.15 \times \text{Redirect/DOM}$ (or $0.78 \times \text{Tabular} + 0.22 \times \text{Redirect/DOM}$ when visual is skipped).
+- **Concurrency & Non-blocking Safety:** Headless browser sandbox is throttled via `asyncio.Semaphore(3)` to cap memory consumption; all synchronous ML inference (LightGBM, SHAP, PyTorch MobileNetV3) and SQLite DB transactions run inside `asyncio.to_thread`.
+- **TTL Cache:** In-memory 5-minute bounded TTL cache (max 256 items) to eliminate duplicate network and inference overhead for repeatedly requested URLs.
 
 ## 4. Environment & Setup Notes
 - **OS:** Linux (Ubuntu) / Python 3.14+
 - **Playwright Browser Binary:** Chromium installed in `~/.cache/ms-playwright/chromium-1255/chrome-linux64/chrome`.
-- **Installed Packages:** `fastapi`, `uvicorn`, `pydantic>=2.0`, `httpx`, `playwright`, `tldextract`, `pillow`, `pytest`, `pytest-asyncio`, `lightgbm`, `shap`, `scikit-learn`, `joblib`, `python-whois`, `pandas`, `imagehash`.
+- **Installed Packages:** `fastapi`, `uvicorn[standard]`, `pydantic>=2.0`, `httpx`, `playwright`, `tldextract`, `pillow`, `pytest`, `pytest-asyncio`, `lightgbm`, `shap`, `scikit-learn`, `joblib`, `python-whois`, `pandas`, `imagehash`, `torch`, `torchvision`.
 
 ## 5. Session Log & Next Action
 - **[Phase 1 Complete]:** Implemented unwrapper and sandbox pipeline (14 tests passed).
 - **[Phase 2 Complete]:** Implemented 27-feature extractor, trained and benchmarked LightGBM champion (`tabular_model.joblib`), integrated `shap.TreeExplainer` with plain-English warnings, and validated 11 new tests (25 total tests passing).
-- **[Phase 3 Complete]:** Implemented `BrandRecord`, `VisualMatchCandidate`, and `VisualCvResult` schemas; created `MobileNetV3Embedder`, `is_official_domain`, and `BrandVisualMatcher`; created `build_brand_vault.py` with 15 high-target brands and generated synthetic reference images; created test suite with 20 passing tests (45 total tests passing).
-- **Immediate Next Action:** Proceed to **Phase 4: Multi-Modal Fusion Engine, Audit Database & FastAPI Analysis API** (`backend/app/fusion.py`, `backend/app/database.py`, `POST /api/v1/analyze`).
+- **[Phase 3 Complete]:** Implemented `BrandRecord`, `VisualMatchCandidate`, and `VisualCvResult` schemas; created `MobileNetV3Embedder`, `is_official_domain`, and `BrandVisualMatcher`; created `build_brand_vault.py` with 15 high-target brands and generated synthetic reference images; created test suite with 22 passing tests (47 total tests passing).
+- **[Phase 4 Complete]:** Implemented `MultiModalRiskFusion`, `ScanHistoryStore` (SQLite), and asynchronous FastAPI backend in `backend/app/main.py` with bounded concurrency (`asyncio.Semaphore(3)`), 5-minute TTL cache, Manifest V3 CORS, and 14 new integration tests (61 total tests passing).
+- **Immediate Next Action:** Proceed to **Phase 5: Chrome Manifest V3 Extension (Real-Time Interceptor & DOM Shield)** (`extension/`).

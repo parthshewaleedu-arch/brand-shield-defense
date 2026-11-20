@@ -11,6 +11,9 @@ class AnalyzeRequest(BaseModel):
     skip_sandbox: bool = Field(default=False, description="Whether to bypass headless browser sandbox rendering")
     max_hops: int = Field(default=10, ge=1, le=30, description="Maximum number of redirect hops to follow")
     force_rescan: bool = Field(default=False, description="Bypass cache and force re-scan")
+    include_screenshot: bool = Field(
+        default=False, description="Whether to include raw base64 screenshot in response"
+    )
 
     @field_validator("url")
     @classmethod
@@ -175,5 +178,72 @@ class VisualCvResult(BaseModel):
     skipped_reason: Optional[str] = Field(
         default=None, description="Reason if visual analysis was skipped (e.g. blank screenshot, no screenshot)"
     )
+
+
+class FusionSummary(BaseModel):
+    """Unified risk evaluation synthesized across Tabular ML, Visual CV, and Redirect/DOM analysis."""
+    verdict: Literal["SAFE", "SUSPICIOUS", "CRITICAL_PHISHING"] = Field(
+        ..., description="Final security classification: SAFE (<0.35), SUSPICIOUS (0.35-0.69), CRITICAL_PHISHING (>=0.70)"
+    )
+    final_risk_score: float = Field(
+        ..., ge=0.0, le=1.0, description="Fused aggregate risk probability clamped between 0.0 and 1.0"
+    )
+    risk_score_pct: int = Field(
+        ..., ge=0, le=100, description="Integer percentage representation of the risk score (0 to 100)"
+    )
+    recommended_action: Literal["ALLOW", "WARN", "BLOCK_CREDENTIALS"] = Field(
+        ..., description="Actionable guidance for the browser extension and security gateway"
+    )
+    override_triggered: bool = Field(
+        default=False, description="Whether a hard override (e.g. Visual Brand Impersonation) dictated the verdict"
+    )
+    override_reason: Optional[str] = Field(
+        default=None, description="Detailed explanation if an override rule was triggered"
+    )
+    component_scores: dict[str, float] = Field(
+        default_factory=dict, description="Individual component scores (tabular_ml, visual_cv, redirect_dom)"
+    )
+    headline: str = Field(
+        ..., description="One-sentence plain-English summary suitable for user-facing security overlays"
+    )
+
+
+class AnalyzeResponse(BaseModel):
+    """Complete diagnostic payload returned by POST /api/v1/analyze."""
+    request_id: str = Field(..., description="Unique UUID identifier for this scan request")
+    analyzed_at: str = Field(..., description="ISO-8601 UTC timestamp of analysis completion")
+    original_url: str = Field(..., description="Target URL originally submitted for analysis")
+    final_url: str = Field(..., description="Final URL resolved after following all redirect hops")
+    cached: bool = Field(default=False, description="True if response was served from in-memory TTL cache")
+    processing_time_ms: int = Field(default=0, ge=0, description="Total end-to-end analysis latency in milliseconds")
+    fusion: FusionSummary = Field(..., description="Aggregated multi-modal fusion verdict and risk scores")
+    redirect_chain: RedirectChainResult = Field(..., description="Complete trace of all redirect hops")
+    sandbox: Optional[SandboxResult] = Field(default=None, description="Headless browser execution results if executed")
+    lexical_ml: LexicalMlResult = Field(..., description="Tabular ML and SHAP explainability inference results")
+    visual_cv: Optional[VisualCvResult] = Field(default=None, description="Computer Vision brand match inference results")
+
+
+class ScanHistoryItem(BaseModel):
+    """Audit log item representing an analyzed URL stored in SQLite."""
+    request_id: str = Field(..., description="UUID identifier of the scan")
+    analyzed_at: str = Field(..., description="ISO-8601 UTC timestamp")
+    original_url: str = Field(..., description="Original requested URL")
+    final_url: str = Field(..., description="Final landing URL")
+    verdict: Literal["SAFE", "SUSPICIOUS", "CRITICAL_PHISHING"] = Field(..., description="Final classification verdict")
+    risk_score_pct: int = Field(..., ge=0, le=100, description="Risk score percentage")
+    matched_brand_name: Optional[str] = Field(default=None, description="Matched brand name if impersonation detected")
+    impersonation_detected: bool = Field(default=False, description="Whether visual impersonation was confirmed")
+    processing_time_ms: int = Field(default=0, ge=0, description="Processing latency in ms")
+
+
+class HealthResponse(BaseModel):
+    """System diagnostic response returned by GET /api/v1/health."""
+    status: Literal["ok", "degraded"] = Field(..., description="Operational status of backend service")
+    tabular_model_loaded: bool = Field(..., description="Whether LightGBM tabular classifier is loaded in memory")
+    brand_vault_loaded: bool = Field(..., description="Whether Brand Vault index and metadata are loaded in memory")
+    indexed_brands_count: int = Field(default=0, ge=0, description="Number of brands indexed in Brand Vault")
+    device: str = Field(..., description="Computation device utilized for PyTorch inference (cpu or cuda)")
+    version: str = Field(default="1.0.0", description="API version identifier")
+
 
 
