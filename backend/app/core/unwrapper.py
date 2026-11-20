@@ -167,7 +167,7 @@ class RedirectUnwrapper:
 
         return None, None
 
-    async def unwrap(self, url: str) -> RedirectChainResult:
+    async def unwrap(self, url: str, max_hops: Optional[int] = None) -> RedirectChainResult:
         """Trace the full redirect chain starting from the provided URL."""
         hops: list[RedirectHop] = []
         errors: list[str] = []
@@ -175,6 +175,7 @@ class RedirectUnwrapper:
         has_shortener = False
         redirect_loop_detected = False
 
+        effective_max_hops = max_hops if max_hops is not None else self.max_hops
         original_url = (url or "").strip()
 
         # Scheme validation
@@ -203,7 +204,7 @@ class RedirectUnwrapper:
             timeout=self.timeout_seconds,
             verify=False,
         ) as client:
-            while len(hops) < self.max_hops:
+            while len(hops) < effective_max_hops:
                 hop_number = len(hops) + 1
                 normalized_current = self.normalize_url(current_url)
 
