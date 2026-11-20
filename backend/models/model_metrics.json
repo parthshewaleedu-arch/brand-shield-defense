@@ -1,0 +1,73 @@
+{
+  "champion": "LightGBM",
+  "model_version": "tabular_v1.0.0",
+  "feature_columns_count": 27,
+  "feature_columns": [
+    "url_length",
+    "hostname_length",
+    "path_length",
+    "subdomain_depth",
+    "dot_count",
+    "hyphen_count",
+    "at_symbol_present",
+    "ip_in_hostname",
+    "digit_ratio",
+    "shannon_entropy",
+    "suspicious_tld_flag",
+    "brand_keyword_in_subdomain",
+    "punycode_flag",
+    "is_https",
+    "query_param_count",
+    "domain_age_days",
+    "ssl_valid",
+    "ssl_cert_age_days",
+    "ssl_is_self_signed",
+    "total_hops",
+    "has_shortener",
+    "redirect_loop_detected",
+    "has_password_input",
+    "external_form_action_count",
+    "hidden_iframe_count",
+    "external_script_ratio",
+    "obfuscated_js_heuristic"
+  ],
+  "champion_metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "pr_auc": 1.0,
+    "fnr": 0.0,
+    "tp": 250,
+    "fp": 0,
+    "tn": 250,
+    "fn": 0
+  },
+  "benchmark_comparison": {
+    "LightGBM": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "pr_auc": 1.0,
+      "fnr": 0.0,
+      "tp": 250,
+      "fp": 0,
+      "tn": 250,
+      "fn": 0
+    },
+    "HistGradientBoosting": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "pr_auc": 1.0,
+      "fnr": 0.0,
+      "tp": 250,
+      "fp": 0,
+      "tn": 250,
+      "fn": 0
+    }
+  },
+  "timestamp": "2026-11-20T09:14:46.242630+00:00"
+}
