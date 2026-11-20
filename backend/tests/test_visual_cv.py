@@ -250,3 +250,25 @@ class TestBrandVaultMatching:
         assert res_phish.impersonation_detected is True
 
 
+class TestMobileNetV3Integration:
+    """Test suite for live MobileNetV3 feature extractor."""
+
+    def test_mobilenet_feature_shape_and_norm(self, sample_sbi_image):
+        embedder = MobileNetV3Embedder(device="cpu")
+        vec = embedder.extract_from_image(sample_sbi_image)
+        assert vec.shape == (576,)
+        assert vec.dtype == np.float32
+        assert np.isclose(np.linalg.norm(vec), 1.0, atol=1e-5)
+
+    def test_mobilenet_extract_from_bytes(self, sample_sbi_image):
+        embedder = MobileNetV3Embedder(device="cpu")
+        buf = io.BytesIO()
+        sample_sbi_image.save(buf, format="PNG")
+        raw_bytes = buf.getvalue()
+
+        vec_from_bytes = embedder.extract_from_bytes(raw_bytes)
+        vec_from_image = embedder.extract_from_image(sample_sbi_image)
+        assert np.allclose(vec_from_bytes, vec_from_image, atol=1e-5)
+
+
+

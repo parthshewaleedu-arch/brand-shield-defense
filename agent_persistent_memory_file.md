@@ -5,7 +5,7 @@
 ## 1. Current Phase Status
 - **Active Phase:** `Phase 3 — Completed`
 - **Overall Completion:** `55%`
-- **Last Verified Test Run:** `45 passed in 18.68s (pytest -v: 100% pass rate, 0 failures)`
+- **Last Verified Test Run:** `47 passed in 21.58s (pytest -v: 100% pass rate, 0 failures, 0 warnings)`
 
 ## 2. Module Implementation Checklist
 - [x] **Phase 0/1 Schemas:** `backend/app/schemas.py` (`AnalyzeRequest`, `RedirectHop`, `RedirectChainResult`, `DomSignals`, `SandboxResult`, `ShapReason`, `LexicalMlResult`, `BrandRecord`, `VisualMatchCandidate`, `VisualCvResult`)
