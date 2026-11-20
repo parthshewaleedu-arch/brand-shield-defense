@@ -1,0 +1,174 @@
+[
+  {
+    "brand_id": "sbi",
+    "brand_name": "State Bank of India",
+    "official_domains": [
+      "onlinesbi.sbi",
+      "sbi.co.in",
+      "onlinesbi.com"
+    ],
+    "category": "banking",
+    "reference_images": [
+      "sbi_login.png"
+    ]
+  },
+  {
+    "brand_id": "hdfc",
+    "brand_name": "HDFC Bank",
+    "official_domains": [
+      "hdfcbank.com"
+    ],
+    "category": "banking",
+    "reference_images": [
+      "hdfc_netbanking.png"
+    ]
+  },
+  {
+    "brand_id": "icici",
+    "brand_name": "ICICI Bank",
+    "official_domains": [
+      "icicibank.com"
+    ],
+    "category": "banking",
+    "reference_images": [
+      "icici_login.png"
+    ]
+  },
+  {
+    "brand_id": "axis",
+    "brand_name": "Axis Bank",
+    "official_domains": [
+      "axisbank.com"
+    ],
+    "category": "banking",
+    "reference_images": [
+      "axis_login.png"
+    ]
+  },
+  {
+    "brand_id": "paytm",
+    "brand_name": "Paytm",
+    "official_domains": [
+      "paytm.com"
+    ],
+    "category": "payments",
+    "reference_images": [
+      "paytm_login.png"
+    ]
+  },
+  {
+    "brand_id": "phonepe",
+    "brand_name": "PhonePe",
+    "official_domains": [
+      "phonepe.com"
+    ],
+    "category": "payments",
+    "reference_images": [
+      "phonepe_login.png"
+    ]
+  },
+  {
+    "brand_id": "google",
+    "brand_name": "Google",
+    "official_domains": [
+      "google.com",
+      "google.co.in"
+    ],
+    "category": "tech",
+    "reference_images": [
+      "google_signin.png"
+    ]
+  },
+  {
+    "brand_id": "microsoft",
+    "brand_name": "Microsoft",
+    "official_domains": [
+      "microsoft.com",
+      "live.com",
+      "office.com"
+    ],
+    "category": "tech",
+    "reference_images": [
+      "microsoft_login.png"
+    ]
+  },
+  {
+    "brand_id": "amazon",
+    "brand_name": "Amazon",
+    "official_domains": [
+      "amazon.com",
+      "amazon.in"
+    ],
+    "category": "ecommerce",
+    "reference_images": [
+      "amazon_signin.png"
+    ]
+  },
+  {
+    "brand_id": "apple",
+    "brand_name": "Apple",
+    "official_domains": [
+      "apple.com",
+      "icloud.com"
+    ],
+    "category": "tech",
+    "reference_images": [
+      "apple_id.png"
+    ]
+  },
+  {
+    "brand_id": "github",
+    "brand_name": "GitHub",
+    "official_domains": [
+      "github.com"
+    ],
+    "category": "tech",
+    "reference_images": [
+      "github_login.png"
+    ]
+  },
+  {
+    "brand_id": "instagram",
+    "brand_name": "Instagram",
+    "official_domains": [
+      "instagram.com"
+    ],
+    "category": "social",
+    "reference_images": [
+      "instagram_login.png"
+    ]
+  },
+  {
+    "brand_id": "linkedin",
+    "brand_name": "LinkedIn",
+    "official_domains": [
+      "linkedin.com"
+    ],
+    "category": "social",
+    "reference_images": [
+      "linkedin_login.png"
+    ]
+  },
+  {
+    "brand_id": "paypal",
+    "brand_name": "PayPal",
+    "official_domains": [
+      "paypal.com"
+    ],
+    "category": "payments",
+    "reference_images": [
+      "paypal_login.png"
+    ]
+  },
+  {
+    "brand_id": "mitaoe",
+    "brand_name": "MIT Academy of Engineering",
+    "official_domains": [
+      "mitaoe.ac.in"
+    ],
+    "category": "campus",
+    "reference_images": [
+      "mitaoe_portal.png"
+    ]
+  }
+]

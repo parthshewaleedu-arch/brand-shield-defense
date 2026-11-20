@@ -118,3 +118,62 @@ class LexicalMlResult(BaseModel):
     )
     model_version: str = Field(..., description="Version identifier of the serialized model artifact")
 
+
+class BrandRecord(BaseModel):
+    """Metadata record representing a protected brand in the Brand Vault."""
+    brand_id: str = Field(..., description="Unique slug for the brand (e.g., 'sbi', 'hdfc', 'google')")
+    brand_name: str = Field(..., description="Human-readable brand name (e.g., 'State Bank of India')")
+    official_domains: list[str] = Field(
+        ..., min_length=1, description="List of canonical registered domains owned by this brand"
+    )
+    category: Literal["banking", "payments", "tech", "ecommerce", "social", "campus", "other"] = Field(
+        ..., description="Sector/category of the brand"
+    )
+    reference_images: list[str] = Field(
+        default_factory=list, description="Relative file paths of reference images inside data/brand_vault/images/"
+    )
+
+
+class VisualMatchCandidate(BaseModel):
+    """Candidate match with similarity metrics against a reference brand."""
+    brand_id: str = Field(..., description="Brand ID of the candidate match")
+    brand_name: str = Field(..., description="Brand display name")
+    cosine_similarity: float = Field(..., ge=0.0, le=1.0, description="MobileNetV3 deep embedding cosine similarity")
+    phash_distance: int = Field(..., ge=0, le=64, description="64-bit perceptual hash Hamming distance")
+    phash_similarity: float = Field(..., ge=0.0, le=1.0, description="Perceptual hash similarity (1.0 - dist / 64.0)")
+    combined_visual_score: float = Field(
+        ..., ge=0.0, le=1.0, description="Weighted fusion score (0.75 * cosine + 0.25 * phash_sim)"
+    )
+
+
+class VisualCvResult(BaseModel):
+    """Inference result from the Visual Brand-Impersonation Engine (Module 1)."""
+    matched_brand_id: Optional[str] = Field(default=None, description="Brand ID of highest matching candidate, if any")
+    matched_brand_name: Optional[str] = Field(default=None, description="Display name of highest matching candidate")
+    official_domains: list[str] = Field(
+        default_factory=list, description="Official registered domains of the matched brand"
+    )
+    cosine_similarity: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="Highest cosine similarity against reference embeddings"
+    )
+    phash_distance: Optional[int] = Field(
+        default=None, ge=0, le=64, description="Perceptual hash Hamming distance for the top match"
+    )
+    combined_visual_score: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="Fused visual similarity score (0.0 to 1.0)"
+    )
+    domain_is_official: bool = Field(
+        default=False, description="Whether target domain is confirmed in official domains of matched brand"
+    )
+    impersonation_detected: bool = Field(
+        default=False, description="Whether visual brand impersonation was confirmed on an unauthorized domain"
+    )
+    top_candidates: list[VisualMatchCandidate] = Field(
+        default_factory=list, description="Top 3 brand matches ranked descending by combined visual score"
+    )
+    inference_time_ms: int = Field(default=0, ge=0, description="Total visual inference latency in milliseconds")
+    skipped_reason: Optional[str] = Field(
+        default=None, description="Reason if visual analysis was skipped (e.g. blank screenshot, no screenshot)"
+    )
+
+
